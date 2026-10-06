@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nathaniel's Off-Season & Tribe Sales Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-gold: #fbbf24;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); padding: 20px; max-width: 1300px; margin: 0 auto; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    h1 { font-size: 1.8rem; font-weight: 700; color: var(--accent-blue); }
+    .mode-badge { background: #0369a1; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; }
+    .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; }
+    
+    .stat-number { font-size: 2rem; font-weight: 700; margin-top: 5px; }
+    .stat-projected { color: var(--accent-blue); }
+    .stat-actual { color: var(--accent-green); }
+    .stat-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 5px; }
+    
+    /* Interactive Sliders & Inputs */
+    .input-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+    input[type="range"], input[type="number"] { width: 100%; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 6px; }
+    .slider-val { font-weight: 700; color: var(--accent-gold); float: right; }
+    
+    /* Habit Checklist */
+    .habit-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; margin-bottom: 10px; }
+    .habit-left { display: flex; align-items: center; gap: 12px; }
+    .habit-left input { width: 18px; height: 18px; accent-color: var(--accent-green); cursor: pointer; }
+    
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color); }
+    th { color: var(--text-muted); font-weight: 600; }
+    .highlight-row { background: rgba(56, 189, 248, 0.1); font-weight: 700; color: var(--accent-blue); }
+    
+    /* Tabs */
+    .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-muted); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .tab-btn.active { background: var(--accent-blue); color: #000; border-color: var(--accent-blue); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Flashcards */
+    .card-deck { text-align: center; padding: 30px; background: rgba(15, 23, 42, 0.8); border-radius: 12px; border: 1px solid var(--border-color); }
+    .affirmation-text { font-size: 1.25rem; font-style: italic; color: var(--accent-gold); margin-bottom: 20px; }
+
+    button.btn-primary { background: var(--accent-green); color: #000; font-weight: 700; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 10px; }
+    button.btn-primary:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>Nathaniel's Performance Dashboard</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Off-Season Prep & TRIBE 2027 Veteran Tier Strategy</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <span class="mode-badge">Off-Season Active</span>
+      <span id="countdown" style="font-weight: 700; color: var(--accent-gold);">-- Days to May 1st</span>
+    </div>
+  </header>
+
+  <div class="tab-menu">
+    <button class="tab-btn active" onclick="switchTab('calculator', this)">Financial & Sales Pacing</button>
+    <button class="tab-btn" onclick="switchTab('habits', this)">Daily Habits & Prep</button>
+    <button class="tab-btn" onclick="switchTab('mindset', this)">Mindset & Affirmations</button>
+    <button class="tab-btn" onclick="switchTab('roadmap', this)">30-Week Roadmap</button>
+    <button class="tab-btn" onclick="switchTab('payscale', this)">TRIBE Pay Scale Matrix</button>
+  </div>
+
+  <!-- TAB 1: FINANCIAL & SALES PACING -->
+  <div id="calculator" class="tab-content active">
+    <div class="grid-container">
+      <!-- Calculator Inputs -->
+      <div class="card">
+        <div class="card-title">Season Target Inputs</div>
+        
+        <div class="input-group">
+          <label>Target Serviced Accounts: <span class="slider-val" id="targetAccountsVal">150</span></label>
+          <input type="range" id="targetAccounts" min="50" max="400" value="150" oninput="calculateProjections()">
+        </div>
+
+        <div class="input-group">
+          <label>Average Contract Value ($): <span class="slider-val" id="contractValDisplay">$766</span></label>
+          <input type="range" id="contractVal" min="500" max="1000" value="766" step="5" oninput="calculateProjections()">
+          <span class="stat-sub">Tribe Veteran Average: $766</span>
+        </div>
+
+        <div class="input-group">
+          <label>In-Season Weeks (May 1 - Aug 31): <span class="slider-val" id="seasonWeeksVal">17</span></label>
+          <input type="range" id="seasonWeeks" min="12" max="20" value="17" oninput="calculateProjections()">
+        </div>
+
+        <div class="input-group">
+          <label>Knocking Days / Week: <span class="slider-val" id="workDaysVal">6</span></label>
+          <input type="range" id="workDays" min="4" max="6" value="6" oninput="calculateProjections()">
+        </div>
+
+        <div class="input-group">
+          <label>Actual Serviced Accounts Signed So Far:</label>
+          <input type="number" id="actualAccounts" value="0" min="0" oninput="calculateProjections()">
+        </div>
+      </div>
+
+      <!-- Financial Metrics: Projected vs Actual -->
+      <div class="card">
+        <div class="card-title">Serviced Revenue</div>
+        <div>
+          <div class="stat-sub">PROJECTED REVENUE</div>
+          <div class="stat-number stat-projected" id="projRev">$114,900</div>
+        </div>
+        <hr style="border-color: var(--border-color); margin: 15px 0;">
+        <div>
+          <div class="stat-sub">ACTUAL SERVICED REVENUE LOGGED</div>
+          <div class="stat-number stat-actual" id="actRev">$0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Personal Commission Payout</div>
+        <div>
+          <div class="stat-sub">PROJECTED NET COMMISSION (<span id="projTierRate">36%</span> Tier)</div>
+          <div class="stat-number stat-projected" id="projComm">$41,364</div>
+        </div>
+        <hr style="border-color: var(--border-color); margin: 15px 0;">
+        <div>
+          <div class="stat-sub">ACTUAL COMMISSION EARNED</div>
+          <div class="stat-number stat-actual" id="actComm">$0</div>
+        </div>
+      </div>
+
+      <!-- In-Season Daily Sales Pacing Requirements -->
+      <div class="card">
+        <div class="card-title">In-Season Daily Pacing Requirements</div>
+        <div style="margin-bottom: 12px;">
+          <div class="stat-sub">REQUIRED SALES PER WEEK</div>
+          <div class="stat-number" id="reqWeeklySales" style="font-size:1.5rem; color:var(--accent-gold);">8.8 Sales/Wk</div>
+        </div>
+        <div>
+          <div class="stat-sub">REQUIRED SALES PER DAY</div>
+          <div class="stat-number" id="reqDailySales" style="font-size:1.5rem; color:var(--accent-green);">1.5 Sales/Day</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payout Breakdown Schedule -->
+    <div class="card" style="margin-bottom: 25px;">
+      <div class="card-title">TRIBE Veteran Payout Schedule Breakdown (Projected)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Payout Phase</th>
+            <th>Timing</th>
+            <th>Formula / Calculation</th>
+            <th>Projected Cash Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Upfront Cash</strong></td>
+            <td>In-Season (Per Account Serviced)</td>
+            <td>$150 / Serviced Account</td>
+            <td id="payoutUpfront" style="color: var(--accent-green); font-weight:700;">$22,500</td>
+          </tr>
+          <tr>
+            <td><strong>October Payout</strong></td>
+            <td>October 2027 Settlement</td>
+            <td>70% of Earned Commission minus Upfronts Paid</td>
+            <td id="payoutOct" style="color: var(--accent-blue); font-weight:700;">$6,455</td>
+          </tr>
+          <tr>
+            <td><strong>February Back-End</strong></td>
+            <td>February 10, 2028 Final Payout</td>
+            <td>Remaining 30% Commission Balance</td>
+            <td id="payoutFeb" style="color: var(--accent-gold); font-weight:700;">$12,409</td>
+          </tr>
+          <tr class="highlight-row">
+            <td><strong>Total Earnings</strong></td>
+            <td>Full Season Settlement</td>
+            <td>Commission + Applicable Rent Bonuses</td>
+            <td id="payoutTotal">$41,364</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 2: DAILY HABITS -->
+  <div id="habits" class="tab-content">
+    <div class="grid-container">
+      <div class="card">
+        <div class="card-title">Daily Execution Checklist</div>
+        
+        <div class="habit-item">
+          <div class="habit-left">
+            <input type="checkbox" id="habit1" onchange="saveHabitState()">
+            <div>
+              <strong>Morning Prayer</strong>
+              <div class="stat-sub">Right upon getting out of bed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="habit-item">
+          <div class="habit-left">
+            <input type="checkbox" id="habit2" onchange="saveHabitState()">
+            <div>
+              <strong>8:00 AM Scripture Study</strong>
+              <div class="stat-sub">15–20 minutes focused reading</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="habit-item">
+          <div class="habit-left">
+            <input type="checkbox" id="habit3" onchange="saveHabitState()">
+            <div>
+              <strong>Daily Workout (5x/wk Target)</strong>
+              <div class="stat-sub">Lifting / Strength session</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="habit-item">
+          <div class="habit-left">
+            <input type="checkbox" id="habit4" onchange="saveHabitState()">
+            <div>
+              <strong>Ankle Physical Therapy (5x/wk Target)</strong>
+              <div class="stat-sub">Rehab exercises to fix ankle injury</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="habit-item">
+          <div class="habit-left">
+            <input type="checkbox" id="habit5" onchange="saveHabitState()">
+            <div>
+              <strong>Sales Prep & Belief Reps</strong>
+              <div class="stat-sub">30–60 mins: pitch work / positive affirmations</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="habit-item">
+          <div class="habit-left">
+            <input type="checkbox" id="habit6" onchange="saveHabitState()">
+            <div>
+              <strong>Evening Prayer</strong>
+              <div class="stat-sub">Right before turning off lights</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="resetHabits()">Reset Checklist for Tomorrow</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Weekly Habit Consistency</div>
+        <p class="stat-sub" style="margin-bottom: 15px;">Target: Maintain 85%+ completion rate throughout the off-season.</p>
+        <canvas id="habitChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: MINDSET & AFFIRMATIONS -->
+  <div id="mindset" class="tab-content">
+    <div class="card">
+      <div class="card-title">Identity & Mindset Reps (Overcoming Social Anxiety)</div>
+      <div class="card-deck">
+        <div class="affirmation-text" id="affirmationBox">"I am fully present, grounded, and confident in my own skin."</div>
+        <button class="btn-primary" style="max-width: 250px;" onclick="nextAffirmation()">Next Affirmation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: 30-WEEK ROADMAP -->
+  <div id="roadmap" class="tab-content">
+    <div class="card">
+      <div class="card-title">30-Week Off-Season Execution Roadmap</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Phase</th>
+            <th>Weeks</th>
+            <th>Primary Objective</th>
+            <th>Key Deliverables</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Phase 1: Foundation</strong></td>
+            <td>Wks 1–10</td>
+            <td>Habit Stacking & Dopamine Reset</td>
+            <td>100% daily scripture/prayer consistency, 5x/wk workout & ankle PT.</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 2: Rejection Immunity</strong></td>
+            <td>Wks 11–20</td>
+            <td>Social Comfort & Belief Reps</td>
+            <td>Daily identity affirmations, pitch objection roleplay, physical recovery.</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 3: Summer Peak Launch</strong></td>
+            <td>Wks 21–30</td>
+            <td>Full Sales Execution Readiness</td>
+            <td>Final pitch stamina drills, housing & territory logistics, peak strength.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 5: PAY SCALE MATRIX -->
+  <div id="payscale" class="tab-content">
+    <div class="card">
+      <div class="card-title">TRIBE 2027 Official Veteran Pay Scale Matrix</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Personal Active Serviced Revenue</th>
+            <th>Commission %</th>
+            <th>Upfront Cash per Account</th>
+            <th>Rent Bonus Tier</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>$0 – $49,999</td><td>32%</td><td>$150</td><td>--</td></tr>
+          <tr><td>$50,000 – $99,999</td><td>34%</td><td>$150</td><td>$500 bonus at $45K/mo</td></tr>
+          <tr><td>$100,000 – $149,999</td><td>36%</td><td>$150</td><td>$1,000 bonus at $65K/mo</td></tr>
+          <tr class="highlight-row"><td>$115,000 (Cruise Benchmark)</td><td>36%</td><td>$150</td><td>Half Cruise Trip Earned</td></tr>
+          <tr class="highlight-row"><td>$150,000 (Cruise Benchmark)</td><td>38%</td><td>$150</td><td>Full Cruise Trip Earned</td></tr>
+          <tr><td>$200,000 – $249,999</td><td>40%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
+          <tr><td>$250,000 – $299,999</td><td>43%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
+          <tr><td>$300,000 – $349,999</td><td>46%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
+          <tr><td>$350,000 – $399,999</td><td>49%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
+          <tr><td>$400,000 – $449,999</td><td>53%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
+          <tr><td>$500,000 – $599,999</td><td>61%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
+          <tr><td>$600,000+ (Golden Door)</td><td>65% (70% max)</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Countdown Timer
+    function updateCountdown() {
+      const startSeason = new Date('2027-05-01T00:00:00');
+      const now = new Date();
+      const diffTime = startSeason - now;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      document.getElementById('countdown').innerText = diffDays > 0 ? `${diffDays} Days to May 1st` : "In-Season Active!";
+    }
+    updateCountdown();
+
+    // Veteran Pay Scale Tier Lookup
+    function getVeteranCommissionRate(revenue) {
+      if (revenue < 50000) return 0.32;
+      if (revenue < 100000) return 0.34;
+      if (revenue < 150000) return 0.36;
+      if (revenue < 200000) return 0.38;
+      if (revenue < 250000) return 0.40;
+      if (revenue < 300000) return 0.43;
+      if (revenue < 350000) return 0.46;
+      if (revenue < 400000) return 0.49;
+      if (revenue < 450000) return 0.53;
+      if (revenue < 500000) return 0.57;
+      if (revenue < 600000) return 0.61;
+      return 0.65;
+    }
+
+    // Calculations Engine
+    function calculateProjections() {
+      const targetAccounts = parseInt(document.getElementById('targetAccounts').value);
+      const contractVal = parseInt(document.getElementById('contractVal').value);
+      const seasonWeeks = parseInt(document.getElementById('seasonWeeks').value);
+      const workDays = parseInt(document.getElementById('workDays').value);
+      const actualAccounts = parseInt(document.getElementById('actualAccounts').value) || 0;
+
+      document.getElementById('targetAccountsVal').innerText = targetAccounts;
+      document.getElementById('contractValDisplay').innerText = '$' + contractVal;
+      document.getElementById('seasonWeeksVal').innerText = seasonWeeks;
+      document.getElementById('workDaysVal').innerText = workDays;
+
+      // In-Season Sales Pacing
+      const reqWeekly = (targetAccounts / seasonWeeks).toFixed(1);
+      const reqDaily = (targetAccounts / (seasonWeeks * workDays)).toFixed(1);
+      document.getElementById('reqWeeklySales').innerText = reqWeekly + ' Sales/Wk';
+      document.getElementById('reqDailySales').innerText = reqDaily + ' Sales/Day';
+
+      // Projected Calculations
+      const projServicedRev = targetAccounts * contractVal;
+      const commRate = getVeteranCommissionRate(projServicedRev);
+      const projNetComm = projServicedRev * commRate;
+
+      // Payout Breakdown
+      const upfrontPay = targetAccounts * 150;
+      const octPayout = (projNetComm * 0.70) - upfrontPay;
+      const febPayout = projNetComm * 0.30;
+
+      // Render Projected
+      document.getElementById('projRev').innerText = '$' + projServicedRev.toLocaleString();
+      document.getElementById('projTierRate').innerText = (commRate * 100).toFixed(0) + '%';
+      document.getElementById('projComm').innerText = '$' + Math.round(projNetComm).toLocaleString();
+      
+      document.getElementById('payoutUpfront').innerText = '$' + upfrontPay.toLocaleString();
+      document.getElementById('payoutOct').innerText = '$' + Math.max(0, Math.round(octPayout)).toLocaleString();
+      document.getElementById('payoutFeb').innerText = '$' + Math.round(febPayout).toLocaleString();
+      document.getElementById('payoutTotal').innerText = '$' + Math.round(projNetComm).toLocaleString();
+
+      // Render Actuals
+      const actServicedRev = actualAccounts * contractVal;
+      const actCommRate = getVeteranCommissionRate(actServicedRev);
+      const actNetComm = actServicedRev * actCommRate;
+      document.getElementById('actRev').innerText = '$' + actServicedRev.toLocaleString();
+      document.getElementById('actComm').innerText = '$' + Math.round(actNetComm).toLocaleString();
+    }
+    calculateProjections();
+
+    // Affirmations Engine
+    const affirmations = [
+      '"I am fully present, grounded, and confident in my own skin."',
+      '"Rejection on the doors is never personal—it is just data."',
+      '"I build value and trust effortlessly with every homeowner I talk to."',
+      '"My discipline today builds my financial freedom tomorrow."',
+      '"I bring strong energy and conviction to every single interaction."'
+    ];
+    let affIndex = 0;
+    function nextAffirmation() {
+      affIndex = (affIndex + 1) % affirmations.length;
+      document.getElementById('affirmationBox').innerText = affirmations[affIndex];
+    }
+
+    // Local Storage for Habits
+    function saveHabitState() {
+      for (let i = 1; i <= 6; i++) {
+        const checkbox = document.getElementById(`habit${i}`);
+        localStorage.setItem(`habit_${i}`, checkbox.checked);
+      }
+    }
+
+    function loadHabitState() {
+      for (let i = 1; i <= 6; i++) {
+        const checkbox = document.getElementById(`habit${i}`);
+        const saved = localStorage.getItem(`habit_${i}`);
+        if (saved !== null) checkbox.checked = (saved === 'true');
+      }
+    }
+    loadHabitState();
+
+    function resetHabits() {
+      for (let i = 1; i <= 6; i++) {
+        document.getElementById(`habit${i}`).checked = false;
+        localStorage.removeItem(`habit_${i}`);
+      }
+    }
+
+    // Chart.js Habit Render
+    const ctx = document.getElementById('habitChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Daily Completion %',
+          data: [100, 83, 100, 83, 67, 100, 100],
+          backgroundColor: '#38bdf8',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true, max: 100 } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  </script>
+</body>
+</html>
