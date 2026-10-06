@@ -88,7 +88,6 @@
   <!-- TAB 1: FINANCIAL & SALES PACING -->
   <div id="calculator" class="tab-content active">
     <div class="grid-container">
-      <!-- Calculator Inputs -->
       <div class="card">
         <div class="card-title">Season Target Inputs</div>
         
@@ -119,7 +118,6 @@
         </div>
       </div>
 
-      <!-- Financial Metrics: Projected vs Actual -->
       <div class="card">
         <div class="card-title">Serviced Revenue</div>
         <div>
@@ -146,7 +144,6 @@
         </div>
       </div>
 
-      <!-- In-Season Daily Sales Pacing Requirements -->
       <div class="card">
         <div class="card-title">In-Season Daily Pacing Requirements</div>
         <div style="margin-bottom: 12px;">
@@ -160,7 +157,6 @@
       </div>
     </div>
 
-    <!-- Payout Breakdown Schedule -->
     <div class="card" style="margin-bottom: 25px;">
       <div class="card-title">TRIBE Veteran Payout Schedule Breakdown (Projected)</div>
       <table>
@@ -210,7 +206,7 @@
         
         <div class="habit-item">
           <div class="habit-left">
-            <input type="checkbox" id="habit1" onchange="saveHabitState()">
+            <input type="checkbox" id="habit1" onchange="onHabitChange()">
             <div>
               <strong>Morning Prayer</strong>
               <div class="stat-sub">Right upon getting out of bed</div>
@@ -220,7 +216,7 @@
 
         <div class="habit-item">
           <div class="habit-left">
-            <input type="checkbox" id="habit2" onchange="saveHabitState()">
+            <input type="checkbox" id="habit2" onchange="onHabitChange()">
             <div>
               <strong>8:00 AM Scripture Study</strong>
               <div class="stat-sub">15–20 minutes focused reading</div>
@@ -230,7 +226,7 @@
 
         <div class="habit-item">
           <div class="habit-left">
-            <input type="checkbox" id="habit3" onchange="saveHabitState()">
+            <input type="checkbox" id="habit3" onchange="onHabitChange()">
             <div>
               <strong>Daily Workout (5x/wk Target)</strong>
               <div class="stat-sub">Lifting / Strength session</div>
@@ -240,7 +236,7 @@
 
         <div class="habit-item">
           <div class="habit-left">
-            <input type="checkbox" id="habit4" onchange="saveHabitState()">
+            <input type="checkbox" id="habit4" onchange="onHabitChange()">
             <div>
               <strong>Ankle Physical Therapy (5x/wk Target)</strong>
               <div class="stat-sub">Rehab exercises to fix ankle injury</div>
@@ -250,7 +246,7 @@
 
         <div class="habit-item">
           <div class="habit-left">
-            <input type="checkbox" id="habit5" onchange="saveHabitState()">
+            <input type="checkbox" id="habit5" onchange="onHabitChange()">
             <div>
               <strong>Sales Prep & Belief Reps</strong>
               <div class="stat-sub">30–60 mins: pitch work / positive affirmations</div>
@@ -260,7 +256,7 @@
 
         <div class="habit-item">
           <div class="habit-left">
-            <input type="checkbox" id="habit6" onchange="saveHabitState()">
+            <input type="checkbox" id="habit6" onchange="onHabitChange()">
             <div>
               <strong>Evening Prayer</strong>
               <div class="stat-sub">Right before turning off lights</div>
@@ -273,7 +269,7 @@
 
       <div class="card">
         <div class="card-title">Weekly Habit Consistency</div>
-        <p class="stat-sub" style="margin-bottom: 15px;">Target: Maintain 85%+ completion rate throughout the off-season.</p>
+        <p class="stat-sub" style="margin-bottom: 15px;">Today's Progress: <span id="todayCompletionPct" style="color:var(--accent-green); font-weight:700;">0%</span></p>
         <canvas id="habitChart" height="200"></canvas>
       </div>
     </div>
@@ -341,162 +337,3 @@
           </tr>
         </thead>
         <tbody>
-          <tr><td>$0 – $49,999</td><td>32%</td><td>$150</td><td>--</td></tr>
-          <tr><td>$50,000 – $99,999</td><td>34%</td><td>$150</td><td>$500 bonus at $45K/mo</td></tr>
-          <tr><td>$100,000 – $149,999</td><td>36%</td><td>$150</td><td>$1,000 bonus at $65K/mo</td></tr>
-          <tr class="highlight-row"><td>$115,000 (Cruise Benchmark)</td><td>36%</td><td>$150</td><td>Half Cruise Trip Earned</td></tr>
-          <tr class="highlight-row"><td>$150,000 (Cruise Benchmark)</td><td>38%</td><td>$150</td><td>Full Cruise Trip Earned</td></tr>
-          <tr><td>$200,000 – $249,999</td><td>40%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
-          <tr><td>$250,000 – $299,999</td><td>43%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
-          <tr><td>$300,000 – $349,999</td><td>46%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
-          <tr><td>$350,000 – $399,999</td><td>49%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
-          <tr><td>$400,000 – $449,999</td><td>53%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
-          <tr><td>$500,000 – $599,999</td><td>61%</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
-          <tr><td>$600,000+ (Golden Door)</td><td>65% (70% max)</td><td>$150</td><td>Max Rent Bonus Eligible</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <script>
-    // Tab switching
-    function switchTab(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      btn.classList.add('active');
-    }
-
-    // Countdown Timer
-    function updateCountdown() {
-      const startSeason = new Date('2027-05-01T00:00:00');
-      const now = new Date();
-      const diffTime = startSeason - now;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      document.getElementById('countdown').innerText = diffDays > 0 ? `${diffDays} Days to May 1st` : "In-Season Active!";
-    }
-    updateCountdown();
-
-    // Veteran Pay Scale Tier Lookup
-    function getVeteranCommissionRate(revenue) {
-      if (revenue < 50000) return 0.32;
-      if (revenue < 100000) return 0.34;
-      if (revenue < 150000) return 0.36;
-      if (revenue < 200000) return 0.38;
-      if (revenue < 250000) return 0.40;
-      if (revenue < 300000) return 0.43;
-      if (revenue < 350000) return 0.46;
-      if (revenue < 400000) return 0.49;
-      if (revenue < 450000) return 0.53;
-      if (revenue < 500000) return 0.57;
-      if (revenue < 600000) return 0.61;
-      return 0.65;
-    }
-
-    // Calculations Engine
-    function calculateProjections() {
-      const targetAccounts = parseInt(document.getElementById('targetAccounts').value);
-      const contractVal = parseInt(document.getElementById('contractVal').value);
-      const seasonWeeks = parseInt(document.getElementById('seasonWeeks').value);
-      const workDays = parseInt(document.getElementById('workDays').value);
-      const actualAccounts = parseInt(document.getElementById('actualAccounts').value) || 0;
-
-      document.getElementById('targetAccountsVal').innerText = targetAccounts;
-      document.getElementById('contractValDisplay').innerText = '$' + contractVal;
-      document.getElementById('seasonWeeksVal').innerText = seasonWeeks;
-      document.getElementById('workDaysVal').innerText = workDays;
-
-      // In-Season Sales Pacing
-      const reqWeekly = (targetAccounts / seasonWeeks).toFixed(1);
-      const reqDaily = (targetAccounts / (seasonWeeks * workDays)).toFixed(1);
-      document.getElementById('reqWeeklySales').innerText = reqWeekly + ' Sales/Wk';
-      document.getElementById('reqDailySales').innerText = reqDaily + ' Sales/Day';
-
-      // Projected Calculations
-      const projServicedRev = targetAccounts * contractVal;
-      const commRate = getVeteranCommissionRate(projServicedRev);
-      const projNetComm = projServicedRev * commRate;
-
-      // Payout Breakdown
-      const upfrontPay = targetAccounts * 150;
-      const octPayout = (projNetComm * 0.70) - upfrontPay;
-      const febPayout = projNetComm * 0.30;
-
-      // Render Projected
-      document.getElementById('projRev').innerText = '$' + projServicedRev.toLocaleString();
-      document.getElementById('projTierRate').innerText = (commRate * 100).toFixed(0) + '%';
-      document.getElementById('projComm').innerText = '$' + Math.round(projNetComm).toLocaleString();
-      
-      document.getElementById('payoutUpfront').innerText = '$' + upfrontPay.toLocaleString();
-      document.getElementById('payoutOct').innerText = '$' + Math.max(0, Math.round(octPayout)).toLocaleString();
-      document.getElementById('payoutFeb').innerText = '$' + Math.round(febPayout).toLocaleString();
-      document.getElementById('payoutTotal').innerText = '$' + Math.round(projNetComm).toLocaleString();
-
-      // Render Actuals
-      const actServicedRev = actualAccounts * contractVal;
-      const actCommRate = getVeteranCommissionRate(actServicedRev);
-      const actNetComm = actServicedRev * actCommRate;
-      document.getElementById('actRev').innerText = '$' + actServicedRev.toLocaleString();
-      document.getElementById('actComm').innerText = '$' + Math.round(actNetComm).toLocaleString();
-    }
-    calculateProjections();
-
-    // Affirmations Engine
-    const affirmations = [
-      '"I am fully present, grounded, and confident in my own skin."',
-      '"Rejection on the doors is never personal—it is just data."',
-      '"I build value and trust effortlessly with every homeowner I talk to."',
-      '"My discipline today builds my financial freedom tomorrow."',
-      '"I bring strong energy and conviction to every single interaction."'
-    ];
-    let affIndex = 0;
-    function nextAffirmation() {
-      affIndex = (affIndex + 1) % affirmations.length;
-      document.getElementById('affirmationBox').innerText = affirmations[affIndex];
-    }
-
-    // Local Storage for Habits
-    function saveHabitState() {
-      for (let i = 1; i <= 6; i++) {
-        const checkbox = document.getElementById(`habit${i}`);
-        localStorage.setItem(`habit_${i}`, checkbox.checked);
-      }
-    }
-
-    function loadHabitState() {
-      for (let i = 1; i <= 6; i++) {
-        const checkbox = document.getElementById(`habit${i}`);
-        const saved = localStorage.getItem(`habit_${i}`);
-        if (saved !== null) checkbox.checked = (saved === 'true');
-      }
-    }
-    loadHabitState();
-
-    function resetHabits() {
-      for (let i = 1; i <= 6; i++) {
-        document.getElementById(`habit${i}`).checked = false;
-        localStorage.removeItem(`habit_${i}`);
-      }
-    }
-
-    // Chart.js Habit Render
-    const ctx = document.getElementById('habitChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'Daily Completion %',
-          data: [100, 83, 100, 83, 67, 100, 100],
-          backgroundColor: '#38bdf8',
-          borderRadius: 6
-        }]
-      },
-      options: {
-        scales: { y: { beginAtZero: true, max: 100 } },
-        plugins: { legend: { display: false } }
-      }
-    });
-  </script>
-</body>
-</html>
