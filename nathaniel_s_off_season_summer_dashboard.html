@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nathaniel Markham - Off-Season & Summer Sales Dashboard</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            darkbg: '#0f172a',
+            darkcard: '#1e293b',
+            darkborder: '#334155'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+
+    .tab-btn.active {
+      background-color: #16a34a;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+
+    .mode-btn.active-mode {
+      background-color: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased">
+
+  <header class="bg-darkcard border-b border-darkborder sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col lg:flex-row items-center justify-between gap-4">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3">
+        <div class="p-3 bg-brand-600/20 text-brand-500 rounded-xl border border-brand-500/30">
+          <i class="fa-solid fa-trophy text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            Nathaniel Markham
+            <span id="header-mode-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-900/60 text-blue-400 border border-blue-700/50">
+              Off-Season Prep
+            </span>
+          </h1>
+          <p class="text-xs text-slate-400">Pest Control Sales Prep & Identity Recalibration</p>
+        </div>
+      </div>
+
+      <!-- Mode Switcher & Stats Bar -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Mode Toggle Switch -->
+        <div class="bg-slate-900/90 p-1 rounded-xl border border-darkborder flex items-center gap-1">
+          <button onclick="setDashboardMode('offseason')" id="btn-mode-offseason" class="mode-btn active-mode px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-calendar-minus"></i> Off-Season Prep (Oct–Apr)
+          </button>
+          <button onclick="setDashboardMode('summer')" id="btn-mode-summer" class="mode-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-sun text-amber-400"></i> Summer Season (May–Aug)
+          </button>
+        </div>
+
+        <!-- Summary Metric Pill -->
+        <div class="bg-slate-900/80 px-4 py-2 rounded-xl border border-darkborder flex items-center gap-4 text-xs">
+          <div>
+            <span class="block text-slate-400">Revenue Goal</span>
+            <span class="font-bold text-brand-400 text-sm" id="top-revenue-display">$30,000</span>
+          </div>
+          <div class="h-6 w-px bg-darkborder"></div>
+          <div>
+            <span class="block text-slate-400">Target Accounts</span>
+            <span class="font-bold text-white text-sm">150 Accounts</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+    
+    <!-- Dynamic Countdown Banner -->
+    <div id="banner-offseason" class="mb-6 p-4 rounded-xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-800/40 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-blue-500/20 text-blue-400 rounded-lg">
+          <i class="fa-solid fa-stopwatch text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white">Off-Season Preparation Window</h3>
+          <p class="text-xs text-slate-400">October 2026 &mdash; April 30, 2027 (Building identity, physical strength, and sales belief)</p>
+        </div>
+      </div>
+      <div class="text-right flex items-center gap-3">
+        <span class="text-xs text-slate-400">Countdown to May 1 Launch:</span>
+        <span id="countdown-days" class="text-xl font-extrabold text-amber-400 bg-slate-900/90 px-3 py-1 rounded-lg border border-amber-500/30">
+          -- Days
+        </span>
+      </div>
+    </div>
+
+    <div id="banner-summer" class="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-950/60 via-slate-900 to-emerald-950/60 border border-amber-800/40 flex-col md:flex-row items-center justify-between gap-4 hidden">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-amber-500/20 text-amber-400 rounded-lg">
+          <i class="fa-solid fa-door-open text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white">Summer Sales Season Active!</h3>
+          <p class="text-xs text-slate-400">May 1, 2027 &mdash; August 31, 2027 (Execution Time: 18 Weeks / ~108 Sales Days)</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="text-center bg-slate-900 px-3 py-1.5 rounded-lg border border-darkborder">
+          <span class="block text-[10px] text-slate-400 uppercase">Accounts Closed</span>
+          <span id="summer-total-closed" class="text-lg font-bold text-brand-400">0 / 150</span>
+        </div>
+        <div class="text-center bg-slate-900 px-3 py-1.5 rounded-lg border border-darkborder">
+          <span class="block text-[10px] text-slate-400 uppercase">Revenue Earned</span>
+          <span id="summer-total-earned" class="text-lg font-bold text-emerald-400">$0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex flex-wrap gap-2 mb-6 bg-slate-900/60 p-1.5 rounded-xl border border-darkborder">
+      <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active px-4 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+        <i class="fa-solid fa-chart-pie"></i> Overview & Sales Math
+      </button>
+      <button onclick="switchTab('daily')" id="tab-daily" class="tab-btn px-4 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+        <i class="fa-solid fa-list-check"></i> Daily Habit Tracker
+      </button>
+      <button onclick="switchTab('roadmap')" id="tab-roadmap" class="tab-btn px-4 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+        <i class="fa-solid fa-calendar-week"></i> Season Roadmap
+      </button>
+      <button onclick="switchTab('mindset')" id="tab-mindset" class="tab-btn px-4 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+        <i class="fa-solid fa-brain"></i> Mindset & Affirmations
+      </button>
+      <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn px-4 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+        <i class="fa-solid fa-chart-line"></i> Analytics & Consistency
+      </button>
+    </div>
+
+    <div id="content-overview" class="tab-content space-y-6">
+      
+      <!-- Key Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1 -->
+        <div class="bg-darkcard border border-darkborder p-5 rounded-xl shadow-sm">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-medium text-slate-400">Total Goal</p>
+              <h3 class="text-2xl font-bold text-white mt-1">$30,000 Goal</h3>
+            </div>
+            <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg">
+              <i class="fa-solid fa-dollar-sign text-lg"></i>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 mt-3 flex items-center gap-1">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Target: 150 Pest Accounts
+          </p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-darkcard border border-darkborder p-5 rounded-xl shadow-sm">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-medium text-slate-400">Scripture Study</p>
+              <h3 class="text-2xl font-bold text-white mt-1">8:00 AM Daily</h3>
+            </div>
+            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-lg">
+              <i class="fa-solid fa-book-bible text-lg"></i>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 mt-3 flex items-center gap-1">
+            <i class="fa-solid fa-hands-praying text-amber-400"></i> 15-20 Mins + Morning/Night Prayer
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-darkcard border border-darkborder p-5 rounded-xl shadow-sm">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-medium text-slate-400">Fitness & Rehab</p>
+              <h3 class="text-2xl font-bold text-white mt-1">5 Days / Wk</h3>
+            </div>
+            <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-lg">
+              <i class="fa-solid fa-dumbbell text-lg"></i>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 mt-3 flex items-center gap-1">
+            <i class="fa-solid fa-notes-medical text-blue-400"></i> Strength Workouts + Ankle PT
+          </p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bg-darkcard border border-darkborder p-5 rounded-xl shadow-sm">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-medium text-slate-400">Sales Preparation</p>
+              <h3 class="text-2xl font-bold text-white mt-1">30–60 Min/Day</h3>
+            </div>
+            <div class="p-2.5 bg-purple-500/10 text-purple-400 rounded-lg">
+              <i class="fa-solid fa-bullhorn text-lg"></i>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 mt-3 flex items-center gap-1">
+            <i class="fa-solid fa-user-shield text-purple-400"></i> Belief Work & Social Anxiety
+          </p>
+        </div>
+      </div>
+
+      <!-- OFF-SEASON MODE CALCULATOR -->
+      <div id="calc-container-offseason" class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-md">
+        <div class="flex items-center justify-between border-b border-darkborder pb-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-calculator text-brand-500"></i>
+              Off-Season Summer Sales Pacing Calculator
+            </h2>
+            <p class="text-xs text-slate-400">Simulate your required summer sales pace (May 1 – Aug 31)</p>
+          </div>
+          <span class="px-3 py-1 bg-brand-900/50 text-brand-400 border border-brand-700/50 rounded-full text-xs font-semibold">
+            Off-Season Planning
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <!-- Controls Column -->
+          <div class="lg:col-span-7 space-y-5">
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <label for="calc-revenue" class="text-slate-300 font-medium">Summer Revenue Target ($)</label>
+                <span id="calc-revenue-val" class="text-brand-400 font-bold">$30,000</span>
+              </div>
+              <input type="range" id="calc-revenue" min="10000" max="60000" step="1000" value="30000" oninput="updateSalesCalc()"
+                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-500"/>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <label for="calc-commission" class="text-slate-300 font-medium">Est. Commission / Account ($)</label>
+                <span id="calc-commission-val" class="text-brand-400 font-bold">$200</span>
+              </div>
+              <input type="range" id="calc-commission" min="100" max="400" step="10" value="200" oninput="updateSalesCalc()"
+                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-500"/>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <label for="calc-weeks" class="text-slate-300 font-medium">Summer Season Length (Weeks)</label>
+                <span id="calc-weeks-val" class="text-brand-400 font-bold">18 Weeks</span>
+              </div>
+              <input type="range" id="calc-weeks" min="10" max="22" step="1" value="18" oninput="updateSalesCalc()"
+                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-500"/>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <label for="calc-days-week" class="text-slate-300 font-medium">Selling Days per Week</label>
+                <span id="calc-days-week-val" class="text-brand-400 font-bold">6 Days/Wk</span>
+              </div>
+              <input type="range" id="calc-days-week" min="4" max="6" step="1" value="6" oninput="updateSalesCalc()"
+                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-500"/>
+            </div>
+          </div>
+
+          <!-- Output Column -->
+          <div class="lg:col-span-5 bg-slate-900/80 p-6 rounded-xl border border-darkborder text-center space-y-4">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Required Summer Execution</h3>
+            
+            <div class="p-3 bg-brand-950/60 rounded-xl border border-brand-800/40">
+              <span class="block text-xs text-slate-400">Total Accounts Needed</span>
+              <span id="calc-out-accounts" class="text-3xl font-extrabold text-brand-400">150</span>
+              <span class="block text-xs text-slate-500 mt-0.5">Accounts</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-3 bg-slate-800/80 rounded-xl border border-darkborder">
+                <span class="block text-xs text-slate-400">Weekly Target</span>
+                <span id="calc-out-weekly" class="text-xl font-bold text-white">8.3</span>
+                <span class="block text-xs text-slate-500">accounts / wk</span>
+              </div>
+              <div class="p-3 bg-slate-800/80 rounded-xl border border-darkborder">
+                <span class="block text-xs text-slate-400">Daily Pace Target</span>
+                <span id="calc-out-daily" class="text-xl font-bold text-amber-400">1.4</span>
+                <span class="block text-xs text-slate-500">accounts / day</span>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-400 italic">
+              "Building your daily habits off-season makes averaging ~1.4 sales a day routine."
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUMMER LIVE TRACKER CONTAINER (Visible in Summer Mode) -->
+      <div id="calc-container-summer" class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-md hidden">
+        <div class="flex items-center justify-between border-b border-darkborder pb-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-trophy text-amber-400"></i>
+              Summer Live Sales & Revenue Tracker (May 1 - Aug 31)
+            </h2>
+            <p class="text-xs text-slate-400">Log actual sales daily to automatically recalculate required pace</p>
+          </div>
+          <span class="px-3 py-1 bg-amber-900/50 text-amber-400 border border-amber-700/50 rounded-full text-xs font-semibold">
+            Live Summer Mode
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <!-- Log Sales Form -->
+          <div class="lg:col-span-5 bg-slate-900/80 p-5 rounded-xl border border-darkborder space-y-4">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-plus-circle text-brand-500"></i> Log New Account Sale
+            </h3>
+            
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Accounts Signed Today</label>
+              <input type="number" id="input-log-accounts" min="1" max="10" value="1" class="w-full px-3 py-2 bg-slate-800 border border-darkborder rounded-lg text-white font-bold text-sm"/>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Estimated Value / Commission ($)</label>
+              <input type="number" id="input-log-value" value="200" class="w-full px-3 py-2 bg-slate-800 border border-darkborder rounded-lg text-white font-bold text-sm"/>
+            </div>
+
+            <button onclick="logSummerSale()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-lg transition shadow-md flex items-center justify-center gap-2">
+              <i class="fa-solid fa-check"></i> Add to Summer Sales Log
+            </button>
+          </div>
+
+          <!-- Live Progress Metrics -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div class="bg-slate-900/80 p-4 rounded-xl border border-darkborder text-center">
+                <span class="block text-xs text-slate-400">Total Accounts</span>
+                <span id="summer-metric-closed" class="text-2xl font-extrabold text-brand-400">0</span>
+                <span class="block text-[10px] text-slate-500">of 150 Target</span>
+              </div>
+
+              <div class="bg-slate-900/80 p-4 rounded-xl border border-darkborder text-center">
+                <span class="block text-xs text-slate-400">Revenue Earned</span>
+                <span id="summer-metric-rev" class="text-2xl font-extrabold text-emerald-400">$0</span>
+                <span class="block text-[10px] text-slate-500">of $30,000</span>
+              </div>
+
+              <div class="bg-slate-900/80 p-4 rounded-xl border border-darkborder text-center">
+                <span class="block text-xs text-slate-400">Accounts Remaining</span>
+                <span id="summer-metric-remaining" class="text-2xl font-extrabold text-amber-400">150</span>
+                <span class="block text-[10px] text-slate-500">Left to Close</span>
+              </div>
+            </div>
+
+            <!-- Summer Progress Bar -->
+            <div class="p-4 bg-slate-900/80 rounded-xl border border-darkborder space-y-2">
+              <div class="flex justify-between text-xs font-semibold">
+                <span class="text-slate-400">Summer Revenue Progress</span>
+                <span id="summer-progress-pct" class="text-brand-400">0%</span>
+              </div>
+              <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-darkborder">
+                <div id="summer-progress-bar" class="h-full bg-brand-500 transition-all duration-500 w-0"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="content-daily" class="tab-content space-y-6 hidden">
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-md">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-darkborder pb-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-calendar-day text-brand-500"></i>
+              Nathaniel's Daily Habit Protocol
+            </h2>
+            <p class="text-xs text-slate-400">Saved automatically in browser storage. Check off tasks daily to build momentum.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="resetDailyChecklist()" class="text-xs text-slate-400 hover:text-amber-400 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 border border-darkborder">
+              <i class="fa-solid fa-arrow-rotate-right"></i> Reset Today's Tasks
+            </button>
+            <span id="today-date" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-900/50 text-brand-400 border border-brand-700/50">
+              Today
+            </span>
+          </div>
+        </div>
+
+        <!-- Task List -->
+        <div id="daily-tasks-container" class="space-y-3">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <!-- Habit Progress Bar -->
+        <div class="mt-6 pt-4 border-t border-darkborder">
+          <div class="flex justify-between items-center text-xs font-semibold text-slate-400 mb-2">
+            <span>Daily Completion Score</span>
+            <span id="daily-progress-text">0% Completed</span>
+          </div>
+          <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-darkborder">
+            <div id="daily-progress-bar" class="h-full bg-brand-500 transition-all duration-500 w-0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="content-roadmap" class="tab-content space-y-6 hidden">
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-md">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-darkborder pb-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-route text-brand-500"></i>
+              Off-Season Prep Roadmap & Summer Execution
+            </h2>
+            <p class="text-xs text-slate-400">Structured timeline from October 2026 to August 31, 2027</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs px-2.5 py-1 rounded-full bg-amber-900/40 text-amber-400 border border-amber-700/50">
+              Phase 1: Foundation (Oct–Dec)
+            </span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-blue-900/40 text-blue-400 border border-blue-700/50">
+              Phase 2: Mastery (Jan–Apr)
+            </span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-700/50">
+              Phase 3: Summer Sales (May–Aug)
+            </span>
+          </div>
+        </div>
+
+        <!-- Roadmap Grid -->
+        <div id="roadmap-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+    </div>
+
+    <div id="content-mindset" class="tab-content space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Flashcard Engine -->
+        <div class="lg:col-span-7 bg-darkcard border border-darkborder rounded-2xl p-6 shadow-md flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center border-b border-darkborder pb-4 mb-6">
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-sparkles text-amber-400"></i>
+                Daily Identity & Confidence Affirmations
+              </h2>
+              <span id="affirmation-counter" class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-md">
+                Card 1 / 5
+              </span>
+            </div>
+
+            <!-- Card Frame -->
+            <div id="affirmation-card" class="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-2xl border border-slate-700 text-center min-h-[220px] flex flex-col justify-center items-center shadow-lg transition-all duration-300">
+              <i class="fa-solid fa-quote-left text-brand-500/40 text-3xl mb-4"></i>
+              <p id="affirmation-text" class="text-xl sm:text-2xl font-semibold text-white tracking-wide leading-relaxed">
+                Loading affirmation...
+              </p>
+              <span id="affirmation-sub" class="text-xs text-brand-400 font-medium mt-4 uppercase tracking-wider">
+                Category
+              </span>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="flex justify-between items-center mt-6 pt-4 border-t border-darkborder">
+            <button onclick="prevAffirmation()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition border border-darkborder flex items-center gap-2">
+              <i class="fa-solid fa-chevron-left"></i> Previous
+            </button>
+            <button onclick="markAffirmationRead()" id="btn-read-affirmation" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-2">
+              <i class="fa-solid fa-check"></i> Repeat & Anchor
+            </button>
+            <button onclick="nextAffirmation()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition border border-darkborder flex items-center gap-2">
+              Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Social Anxiety & Inner Game Principles -->
+        <div class="lg:col-span-5 bg-darkcard border border-darkborder rounded-2xl p-6 shadow-md space-y-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2 border-b border-darkborder pb-4">
+            <i class="fa-solid fa-shield-halved text-purple-400"></i>
+            Inner Game & Rejection Tools
+          </h2>
+
+          <div class="space-y-3 text-xs text-slate-300">
+            <div class="p-3 bg-slate-900/80 rounded-xl border border-darkborder">
+              <h4 class="font-bold text-amber-400 mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt"></i> Rejection Reframe
+              </h4>
+              <p class="text-slate-400 leading-relaxed">
+                A "No" on the door is never personal. It is merely a reaction to timing or current circumstances. Your worth as a person is unchanged.
+              </p>
+            </div>
+
+            <div class="p-3 bg-slate-900/80 rounded-xl border border-darkborder">
+              <h4 class="font-bold text-blue-400 mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-user-check"></i> Comfort in Your Own Skin
+              </h4>
+              <p class="text-slate-400 leading-relaxed">
+                Authenticity sells better than perfection. People buy from reps who are grounded, relaxed, and comfortable being themselves.
+              </p>
+            </div>
+
+            <div class="p-3 bg-slate-900/80 rounded-xl border border-darkborder">
+              <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-pray"></i> Morning Spiritual Alignment
+              </h4>
+              <p class="text-slate-400 leading-relaxed">
+                Start at 8:00 AM in scripture and prayer. When your spirit is anchored first, social fear loses its hold over your day.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="content-analytics" class="tab-content space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Chart 1 -->
+        <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-md">
+          <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-simple text-brand-500"></i>
+            Weekly Habit Execution Tracker (%)
+          </h3>
+          <div class="relative h-64">
+            <canvas id="chart-habits"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2 -->
+        <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-md">
+          <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-hourglass-half text-purple-400"></i>
+            Cumulative Skill & Spiritual Study Hours
+          </h3>
+          <div class="relative h-64">
+            <canvas id="chart-hours"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-darkcard border-t border-darkborder py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>Nathaniel Markham's Personal Dashboard &bull; $30k Pest Control Target & Daily Habit System</p>
+    </div>
+  </footer>
+
+  <script>
+    // Core Tasks Specification
+    const DEFAULT_TASKS = [
+      { id: 't1', name: '8:00 AM Scripture Study (15-20 mins)', time: '8:00 AM', category: 'Spiritual', icon: 'fa-book-bible', color: 'text-amber-400' },
+      { id: 't2', name: 'Morning Prayer (Upon waking / out of bed)', time: 'Morning', category: 'Spiritual', icon: 'fa-hands-praying', color: 'text-amber-400' },
+      { id: 't3', name: 'Evening Prayer (Right before bed)', time: 'Night', category: 'Spiritual', icon: 'fa-moon', color: 'text-indigo-400' },
+      { id: 't4', name: 'Strength Workout (5x/wk Target)', time: 'Flexible', category: 'Fitness', icon: 'fa-dumbbell', color: 'text-blue-400' },
+      { id: 't5', name: 'Ankle Physical Therapy Rehab', time: 'Flexible', category: 'Rehab', icon: 'fa-notes-medical', color: 'text-emerald-400' },
+      { id: 't6', name: 'Sales Skill & Mindset Prep (30-60 mins)', time: 'Flexible', category: 'Sales Prep', icon: 'fa-bullhorn', color: 'text-purple-400' }
+    ];
+
+    // Affirmation Engine Data
+    const AFFIRMATIONS = [
+      {
+        text: "I am grounded, confident, and entirely comfortable in my own skin.",
+        category: "Self-Worth & Identity"
+      },
+      {
+        text: "Social interactions are opportunities to serve, connect, and learn—not threats to my ego.",
+        category: "Social Anxiety"
+      },
+      {
+        text: "My worth is anchored in God, not in whether a homeowner says yes or no.",
+        category: "Spiritual Anchor"
+      },
+      {
+        text: "Every door I knock builds resilience, grit, and financial independence for my future.",
+        category: "Sales Mindset"
+      },
+      {
+        text: "I am becoming the disciplined, high-performing sales rep and individual I was built to be.",
+        category: "Daily Purpose"
+      }
+    ];
+
+    let dashboardMode = 'offseason'; // 'offseason' | 'summer'
+    let currentAffirmationIndex = 0;
+    let dailyTaskState = {};
+    let summerSalesLog = [];
+    let habitsChart = null;
+    let hoursChart = null;
+
+    window.onload = function() {
+      initCountdown();
+      loadSavedData();
+      renderTasks();
+      updateSalesCalc();
+      renderRoadmap();
+      showAffirmation(0);
+      initCharts();
+      setTodayDateDisplay();
+    };
+
+    function setDashboardMode(mode) {
+      dashboardMode = mode;
+      
+      const btnOffseason = document.getElementById('btn-mode-offseason');
+      const btnSummer = document.getElementById('btn-mode-summer');
+      const badge = document.getElementById('header-mode-badge');
+
+      const bannerOffseason = document.getElementById('banner-offseason');
+      const bannerSummer = document.getElementById('banner-summer');
+
+      const calcOffseason = document.getElementById('calc-container-offseason');
+      const calcSummer = document.getElementById('calc-container-summer');
+
+      if (mode === 'offseason') {
+        btnOffseason.classList.add('active-mode');
+        btnSummer.classList.remove('active-mode');
+        badge.innerText = "Off-Season Prep";
+        badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-900/60 text-blue-400 border border-blue-700/50";
+
+        bannerOffseason.classList.remove('hidden');
+        bannerOffseason.classList.add('flex');
+        bannerSummer.classList.add('hidden');
+        bannerSummer.classList.remove('flex');
+
+        calcOffseason.classList.remove('hidden');
+        calcSummer.classList.add('hidden');
+      } else {
+        btnSummer.classList.add('active-mode');
+        btnOffseason.classList.remove('active-mode');
+        badge.innerText = "Summer Season Active";
+        badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-900/60 text-amber-400 border border-amber-700/50";
+
+        bannerSummer.classList.remove('hidden');
+        bannerSummer.classList.add('flex');
+        bannerOffseason.classList.add('hidden');
+        bannerOffseason.classList.remove('flex');
+
+        calcSummer.classList.remove('hidden');
+        calcOffseason.classList.add('hidden');
+
+        updateSummerMetricsDisplay();
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+      document.getElementById(`content-${tabId}`).classList.remove('hidden');
+
+      if (tabId === 'analytics') {
+        setTimeout(() => {
+          if (habitsChart && hoursChart) {
+            habitsChart.resize();
+            hoursChart.resize();
+          }
+        }, 100);
+      }
+    }
+
+    function initCountdown() {
+      // Countdown to May 1, 2027
+      const targetDate = new Date(2027, 4, 1); // Month 4 is May
+      const now = new Date();
+      
+      const diffTime = Math.max(0, targetDate - now);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      document.getElementById('countdown-days').innerText = `${diffDays} Days`;
+    }
+
+    function setTodayDateDisplay() {
+      const options = { weekday: 'short', month: 'short', day: 'numeric' };
+      const todayStr = new Date().toLocaleDateString('en-US', options);
+      document.getElementById('today-date').innerText = todayStr;
+    }
+
+    function loadSavedData() {
+      // Load daily tasks
+      const savedTasks = localStorage.getItem('nathaniel_daily_tasks');
+      if (savedTasks) {
+        try { dailyTaskState = JSON.parse(savedTasks); } catch(e) { dailyTaskState = {}; }
+      }
+
+      // Load summer sales log
+      const savedSales = localStorage.getItem('nathaniel_summer_sales');
+      if (savedSales) {
+        try { summerSalesLog = JSON.parse(savedSales); } catch(e) { summerSalesLog = []; }
+      }
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('daily-tasks-container');
+      container.innerHTML = '';
+
+      let completedCount = 0;
+
+      DEFAULT_TASKS.forEach(task => {
+        const isChecked = !!dailyTaskState[task.id];
+        if (isChecked) completedCount++;
+
+        const taskEl = document.createElement('div');
+        taskEl.className = `p-4 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
+          isChecked 
+            ? 'bg-brand-950/40 border-brand-800/60 opacity-80' 
+            : 'bg-slate-900/80 border-darkborder hover:border-slate-600'
+        }`;
+        taskEl.onclick = () => toggleTask(task.id);
+
+        taskEl.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-6 h-6 rounded-md border flex items-center justify-center transition-all ${
+              isChecked 
+                ? 'bg-brand-600 border-brand-500 text-white' 
+                : 'border-slate-600 bg-slate-800 text-transparent'
+            }">
+              <i class="fa-solid fa-check text-xs"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-white ${isChecked ? 'line-through text-slate-400' : ''}">
+                ${task.name}
+              </p>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-xs text-slate-400"><i class="fa-regular fa-clock text-slate-500"></i> ${task.time}</span>
+                <span class="text-[10px] px-2 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">${task.category}</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-800/50 ${task.color}">
+            <i class="fa-solid ${task.icon}"></i>
+          </div>
+        `;
+
+        container.appendChild(taskEl);
+      });
+
+      const pct = Math.round((completedCount / DEFAULT_TASKS.length) * 100);
+      document.getElementById('daily-progress-text').innerText = `${pct}% Completed (${completedCount}/${DEFAULT_TASKS.length})`;
+      document.getElementById('daily-progress-bar').style.width = `${pct}%`;
+    }
+
+    function toggleTask(id) {
+      dailyTaskState[id] = !dailyTaskState[id];
+      localStorage.setItem('nathaniel_daily_tasks', JSON.stringify(dailyTaskState));
+      renderTasks();
+    }
+
+    function resetDailyChecklist() {
+      dailyTaskState = {};
+      localStorage.removeItem('nathaniel_daily_tasks');
+      renderTasks();
+    }
+
+    function updateSalesCalc() {
+      const rev = parseInt(document.getElementById('calc-revenue').value);
+      const comm = parseInt(document.getElementById('calc-commission').value);
+      const weeks = parseInt(document.getElementById('calc-weeks').value);
+      const daysPerWeek = parseInt(document.getElementById('calc-days-week').value);
+
+      document.getElementById('calc-revenue-val').innerText = `$${rev.toLocaleString()}`;
+      document.getElementById('calc-commission-val').innerText = `$${comm}`;
+      document.getElementById('calc-weeks-val').innerText = `${weeks} Weeks`;
+      document.getElementById('calc-days-week-val').innerText = `${daysPerWeek} Days/Wk`;
+
+      document.getElementById('top-revenue-display').innerText = `$${rev.toLocaleString()}`;
+
+      const totalAccounts = Math.ceil(rev / comm);
+      const perWeek = (totalAccounts / weeks).toFixed(1);
+      const totalSellingDays = weeks * daysPerWeek;
+      const perDay = (totalAccounts / totalSellingDays).toFixed(1);
+
+      document.getElementById('calc-out-accounts').innerText = totalAccounts;
+      document.getElementById('calc-out-weekly').innerText = perWeek;
+      document.getElementById('calc-out-daily').innerText = perDay;
+    }
+
+    function logSummerSale() {
+      const accounts = parseInt(document.getElementById('input-log-accounts').value) || 1;
+      const val = parseInt(document.getElementById('input-log-value').value) || 200;
+
+      summerSalesLog.push({
+        date: new Date().toISOString(),
+        accounts: accounts,
+        revenue: accounts * val
+      });
+
+      localStorage.setItem('nathaniel_summer_sales', JSON.stringify(summerSalesLog));
+      updateSummerMetricsDisplay();
+    }
+
+    function updateSummerMetricsDisplay() {
+      let totalClosed = 0;
+      let totalEarned = 0;
+
+      summerSalesLog.forEach(item => {
+        totalClosed += item.accounts;
+        totalEarned += item.revenue;
+      });
+
+      document.getElementById('summer-total-closed').innerText = `${totalClosed} / 150`;
+      document.getElementById('summer-total-earned').innerText = `$${totalEarned.toLocaleString()}`;
+
+      document.getElementById('summer-metric-closed').innerText = totalClosed;
+      document.getElementById('summer-metric-rev').innerText = `$${totalEarned.toLocaleString()}`;
+      
+      const remaining = Math.max(0, 150 - totalClosed);
+      document.getElementById('summer-metric-remaining').innerText = remaining;
+
+      const pct = Math.min(100, Math.round((totalEarned / 30000) * 100));
+      document.getElementById('summer-progress-pct').innerText = `${pct}%`;
+      document.getElementById('summer-progress-bar').style.width = `${pct}%`;
+    }
+
+    function renderRoadmap() {
+      const grid = document.getElementById('roadmap-grid');
+      grid.innerHTML = '';
+
+      const phases = [
+        { title: 'Oct–Dec: Foundation', phase: 'Phase 1', color: 'border-amber-700/50 bg-amber-950/20', focus: '8 AM Scripture & Prayer habits, 5x Lift/Rehab, Affirmations.' },
+        { title: 'Jan–Apr: Sales Mastery', phase: 'Phase 2', color: 'border-blue-700/50 bg-blue-950/20', focus: 'Script drills, handling rejection, overcoming social anxiety.' },
+        { title: 'May–Aug: Summer Execution', phase: 'Phase 3', color: 'border-emerald-700/50 bg-emerald-950/20', focus: 'On the doors daily: 150 accounts / $30k revenue pacing.' }
+      ];
+
+      for (let w = 1; w <= 30; w++) {
+        let phaseInfo = phases[0];
+        if (w > 10 && w <= 22) phaseInfo = phases[1];
+        if (w > 22) phaseInfo = phases[2];
+
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl border ${phaseInfo.color} transition hover:scale-[1.01]`;
+        card.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-sm text-white">Week ${w}</span>
+            <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold border border-slate-700">
+              ${phaseInfo.phase}
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 mb-3">${phaseInfo.focus}</p>
+          <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-darkborder">
+            <span>5 Workouts + PT</span>
+            <span>Daily Scripture & Prayer</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    function showAffirmation(index) {
+      currentAffirmationIndex = index;
+      const data = AFFIRMATIONS[index];
+
+      document.getElementById('affirmation-text').innerText = `"${data.text}"`;
+      document.getElementById('affirmation-sub').innerText = data.category;
+      document.getElementById('affirmation-counter').innerText = `Card ${index + 1} / ${AFFIRMATIONS.length}`;
+    }
+
+    function nextAffirmation() {
+      const nextIdx = (currentAffirmationIndex + 1) % AFFIRMATIONS.length;
+      showAffirmation(nextIdx);
+    }
+
+    function prevAffirmation() {
+      const prevIdx = (currentAffirmationIndex - 1 + AFFIRMATIONS.length) % AFFIRMATIONS.length;
+      showAffirmation(prevIdx);
+    }
+
+    function markAffirmationRead() {
+      const btn = document.getElementById('btn-read-affirmation');
+      btn.classList.remove('bg-brand-600', 'hover:bg-brand-500');
+      btn.classList.add('bg-emerald-700');
+      btn.innerHTML = `<i class="fa-solid fa-check-double"></i> Anchored!`;
+
+      setTimeout(() => {
+        btn.classList.remove('bg-emerald-700');
+        btn.classList.add('bg-brand-600', 'hover:bg-brand-500');
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Repeat & Anchor`;
+      }, 1500);
+    }
+
+    function initCharts() {
+      const ctxHabits = document.getElementById('chart-habits').getContext('2d');
+      habitsChart = new Chart(ctxHabits, {
+        type: 'bar',
+        data: {
+          labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'],
+          datasets: [{
+            label: 'Habit Execution Score (%)',
+            data: [85, 90, 88, 95, 92, 98],
+            backgroundColor: '#22c55e',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+
+      const ctxHours = document.getElementById('chart-hours').getContext('2d');
+      hoursChart = new Chart(ctxHours, {
+        type: 'line',
+        data: {
+          labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'],
+          datasets: [
+            {
+              label: 'Sales & Mindset Hours',
+              data: [3.5, 7.0, 11.0, 15.5, 19.5, 24.0],
+              borderColor: '#a855f7',
+              backgroundColor: 'rgba(168, 85, 247, 0.1)',
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Scripture Study Hours',
+              data: [2.0, 4.0, 6.2, 8.5, 10.8, 13.0],
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              fill: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#cbd5e1' } } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
